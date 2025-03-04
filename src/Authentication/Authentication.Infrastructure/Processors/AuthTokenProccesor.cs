@@ -24,7 +24,7 @@ namespace Authentication.Infrastructure.Processors
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user)
+        public UserToken GenerateJwtToken(User user)
 
         {
             var singningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret));
@@ -48,7 +48,13 @@ namespace Authentication.Infrastructure.Processors
             );
             var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 
-            return (jwtToken, expiresAtUtc);
+            var ut = new UserToken
+            {
+                Token = jwtToken,
+                Expiration = expiresAtUtc
+            };
+
+            return ut;
         }
 
         public string GenerateRefreshToken()

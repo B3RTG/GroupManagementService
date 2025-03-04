@@ -1,4 +1,5 @@
-﻿using Authentication.Domain.Request;
+﻿using Authentication.Domain.Entities;
+using Authentication.Domain.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,8 @@ namespace Authentication.Application.Abstracts
         Task RefreshTokenWithCookiesAsync(string? refreshToken);
 
 
-        Task<(string token, DateTime expirationDate)> LoginAsync(LoginRequest loginRequest);
-        Task<(string token, DateTime expirationDate)> RefreshTokenAsync(string? refreshToken);
+        Task<UserToken> LoginAsync(LoginRequest loginRequest);
+        Task<UserToken> RefreshTokenAsync(string? refreshToken);
 
     }
 }

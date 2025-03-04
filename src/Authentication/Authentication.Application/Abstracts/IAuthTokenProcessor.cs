@@ -9,7 +9,7 @@ namespace Authentication.Application.Abstracts
 {
     public interface IAuthTokenProcessor
     {
-        public (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user);
+        public UserToken GenerateJwtToken(User user);
         public string GenerateRefreshToken();
         public void WriteAuthenticationTokenAsHttpCookie(string cookieName, string token, DateTime exporation);
     }

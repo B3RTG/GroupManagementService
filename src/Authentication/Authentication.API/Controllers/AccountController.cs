@@ -1,4 +1,5 @@
 ﻿using Authentication.Application.Abstracts;
+using Authentication.Domain.Entities;
 using Authentication.Domain.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,18 +28,23 @@ namespace Authentication.API.Controllers
             return Ok();
         }
 
+        /// <summary>
+        /// Returns a token for the user
+        /// </summary>
+        /// <param name="loginRequest"></param>
+        /// <returns></returns>
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync(LoginRequest loginRequest)
+        public async Task<UserToken> LoginAsync(LoginRequest loginRequest)
         {
-            var (token, expirationDate) = await _accountService.LoginAsync(loginRequest);
-            return Ok(new { token, expirationDate });
+            var userToken = await _accountService.LoginAsync(loginRequest);
+            return userToken;
         }
 
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshTokenAsync(string refreshToken)
         {
-            var (token, expirationDate) = await _accountService.RefreshTokenAsync(refreshToken);
-            return Ok(new { token, expirationDate });
+            var userToken = await _accountService.RefreshTokenAsync(refreshToken);
+            return Ok(userToken);
         }
 
         [HttpPost("login-cookie")]

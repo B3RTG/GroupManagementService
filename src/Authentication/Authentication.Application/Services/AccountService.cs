@@ -56,7 +56,7 @@ namespace Authentication.Application.Services
                 throw new LoginFailedException(loginRequest.Email);
             }
 
-            var (jwtToken, expirationDate )= _authTokenProcessor.GenerateJwtToken(user);
+            UserToken userToken = _authTokenProcessor.GenerateJwtToken(user);
             
             var refreshToken = _authTokenProcessor.GenerateRefreshToken();
             var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(7); //put 7 days in configuration
@@ -64,20 +64,23 @@ namespace Authentication.Application.Services
             user.RefreshTokenExpiryTimeAtUtc = refreshTokenExpirationDate;
             await _userManager.UpdateAsync(user);
 
+            userToken.RefreshToken = refreshToken;
+            userToken.RefreshTokenExpiration = refreshTokenExpirationDate;
 
-            _authTokenProcessor.WriteAuthenticationTokenAsHttpCookie("access_token", jwtToken, expirationDate);
+
+            _authTokenProcessor.WriteAuthenticationTokenAsHttpCookie("access_token", userToken.Token, userToken.Expiration);
             _authTokenProcessor.WriteAuthenticationTokenAsHttpCookie("refresh_token", refreshToken, refreshTokenExpirationDate);
         }
 
         // LoginAsync method without cookie authentication
-        public async Task<(string token, DateTime expirationDate)> LoginAsync(LoginRequest loginRequest)
+        public async Task<UserToken> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _userManager.FindByEmailAsync(loginRequest.Email);
             if (user == null || !await _userManager.CheckPasswordAsync(user, loginRequest.Password))
             {
                 throw new LoginFailedException(loginRequest.Email);
             }
-            var (jwtToken, expirationDate) = _authTokenProcessor.GenerateJwtToken(user);
+            UserToken userToken = _authTokenProcessor.GenerateJwtToken(user);
 
             var refreshToken = _authTokenProcessor.GenerateRefreshToken();
             var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(7); //put 7 days in configuration
@@ -85,7 +88,10 @@ namespace Authentication.Application.Services
             user.RefreshTokenExpiryTimeAtUtc = refreshTokenExpirationDate;
             await _userManager.UpdateAsync(user);
 
-            return (jwtToken, expirationDate);
+            userToken.RefreshToken = refreshToken;
+            userToken.RefreshTokenExpiration = refreshTokenExpirationDate;
+
+            return userToken;
         }
 
         // RefreshTokenAsync method with cookie authentication
@@ -105,7 +111,7 @@ namespace Authentication.Application.Services
             }
 
 
-            var (jwtToken, expirationDate) = _authTokenProcessor.GenerateJwtToken(user);
+            UserToken userToken = _authTokenProcessor.GenerateJwtToken(user);
 
             refreshToken = _authTokenProcessor.GenerateRefreshToken();
             var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(7); //put 7 days in configuration
@@ -113,13 +119,16 @@ namespace Authentication.Application.Services
             user.RefreshTokenExpiryTimeAtUtc = refreshTokenExpirationDate;
             await _userManager.UpdateAsync(user);
 
-            _authTokenProcessor.WriteAuthenticationTokenAsHttpCookie("access_token", jwtToken, expirationDate);
+            userToken.RefreshToken = refreshToken;
+            userToken.RefreshTokenExpiration = refreshTokenExpirationDate;
+
+            _authTokenProcessor.WriteAuthenticationTokenAsHttpCookie("access_token", userToken.Token, userToken.Expiration);
             _authTokenProcessor.WriteAuthenticationTokenAsHttpCookie("refresh_token", refreshToken, refreshTokenExpirationDate);
         }
 
 
         // RefreshTokenAsync method without cookie authentication
-        public async Task<(string token, DateTime expirationDate)> RefreshTokenAsync(string? refreshToken)
+        public async Task<UserToken> RefreshTokenAsync(string? refreshToken)
         {
             if (string.IsNullOrEmpty(refreshToken))
             {
@@ -131,14 +140,17 @@ namespace Authentication.Application.Services
                 throw new InvalidRefreshTokenException("RefreshToken expired");
             }
 
-            var (jwtToken, expirationDate) = _authTokenProcessor.GenerateJwtToken(user);
+            UserToken userToken = _authTokenProcessor.GenerateJwtToken(user);
             refreshToken = _authTokenProcessor.GenerateRefreshToken();
             var refreshTokenExpirationDate = DateTime.UtcNow.AddDays(7); //put 7 days in configuration
             user.RefreshToken = refreshToken;
             user.RefreshTokenExpiryTimeAtUtc = refreshTokenExpirationDate;
             await _userManager.UpdateAsync(user);
 
-            return (jwtToken, expirationDate);
+            userToken.RefreshToken = refreshToken;
+            userToken.RefreshTokenExpiration = refreshTokenExpirationDate;
+
+            return userToken;
         }
 
     }
